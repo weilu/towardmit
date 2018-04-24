@@ -65,7 +65,7 @@ def parse_coures_sections(course_id, section_files):
 
 
 def maybe_download(url, outfile):
-    if os.path.exists(outfile):
+    if os.path.exists(outfile) and os.stat(outfile).st_size:
         print('{} already exists'.format(outfile))
         return
 
