@@ -1,9 +1,11 @@
 import re
 import shlex
 import os
+import time
+import sys
 from glob import glob
 from bs4 import BeautifulSoup
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 
 DEVNULL = open(os.devnull, 'wb', 0)
 HTTP_HEADS = open('in/headers').read()
@@ -42,8 +44,6 @@ def download_course_sections(course_index_filename):
         filename = indir + '/' + section_link.split('@')[-1]
         maybe_download(section_link, filename)
         downloaded.append(filename)
-        if len(downloaded) >= 5:
-            break
     return downloaded
 
 
@@ -69,10 +69,18 @@ def maybe_download(url, outfile):
         print('{} already exists'.format(outfile))
         return
 
-    print('Fetching {} into {}'.format(url, outfile))
-    curl_cmd = "bash scrape.sh " + url + " " + outfile
-    http_code = int(check_output(shlex.split(curl_cmd), stderr=DEVNULL))
-    print('Completed with http status {}'.format(http_code))
+    try:
+        print('Fetching {} into {}'.format(url, outfile))
+        curl_cmd = "bash scrape.sh " + url + " " + outfile
+        http_code = int(check_output(shlex.split(curl_cmd), stderr=DEVNULL))
+        print('Completed with http status {}'.format(http_code))
+    except CalledProcessError:
+        print(sys.exc_info())
+        sleep_sec = randint(1, 10)
+        print('Sleep for {} seconds before retry'.format(sleep_sec))
+        time.sleep(sleep_sec)
+        maybe_download(url, outfile)
+
 
 
 if __name__ == "__main__":
