@@ -1,6 +1,13 @@
 import re
+import shlex
+import os
 from glob import glob
 from bs4 import BeautifulSoup
+from subprocess import check_output
+
+DEVNULL = open(os.devnull, 'wb', 0)
+HTTP_HEADS = open('in/headers').read()
+
 
 def soup(f):
     return BeautifulSoup(f, 'html.parser')
@@ -14,23 +21,66 @@ def remove_answer(problem_node):
     for select_answer in problem_node.findAll('input', {'type': ['checkbox', 'radio']}):
         del select_answer['checked']
     # remove noise
-    for el in problem_node.findAll('div', {'class': 'equation'}):
+    for el in problem_node.findAll('div', {'class': ['equation', 'action', 'notification']}):
         el.decompose()
+    # fix images
+    for el in problem_node.findAll('img'):
+        if el['src'].startswith('//'):
+            el['src'] = 'http:' + el['src']
 
 
-if __name__ == "__main__":
-    # TODO: course page <a href= contains jump_to
-    # TODO: handle equations & images
-    with open('out/quiz.html', 'w') as out:
-        for filename in glob('in/*.html'):
+def download_course_sections(course_index_filename):
+    dirname = os.path.basename(course_index_filename).replace('.html', '')
+    indir = 'in/{}'.format(dirname)
+    os.makedirs(indir, exist_ok=True)
+
+    # only need one jump_to link from each li.subsection.accordion
+    index = soup(open(course_index_filename))
+    downloaded = []
+    for li in index.select('li.subsection.accordion'):
+        section_link = li.find('a', {'class': 'outline-item'})['href']
+        filename = indir + '/' + section_link.split('@')[-1]
+        maybe_download(section_link, filename)
+        downloaded.append(filename)
+        if len(downloaded) >= 5:
+            break
+    return downloaded
+
+
+def parse_coures_sections(course_id, section_files):
+    with open('out/{}_quiz.html'.format(course_id), 'w') as out:
+        for filename in section_files:
             divs = soup(open(filename, 'r')).findAll('div', {'class': 'seq_contents'})
             for div in divs:
                 div_node = soup(div.text)
                 problems = div_node.findAll('div', {'class': 'problems-wrapper'})
                 if problems:
-                    tab_header = div_node.find('h2', {'class': 'unit-title'}).text
+                    tab_header = div_node.find('h2', {'class': 'unit-title'})
+                    out.write(str(tab_header))
                     for prob in problems:
                         problem = soup(prob['data-content'])
-                        problem_node = problem.find('div', {'class': 'wrapper-problem-response'})
+                        problem_node = problem.find('div', {'class': 'problem'})
                         remove_answer(problem_node)
                         out.write(problem_node.prettify())
+
+
+def maybe_download(url, outfile):
+    if os.path.exists(outfile):
+        print('{} already exists'.format(outfile))
+        return
+
+    print('Fetching {} into {}'.format(url, outfile))
+    curl_cmd = "bash scrape.sh " + url + " " + outfile
+    http_code = int(check_output(shlex.split(curl_cmd), stderr=DEVNULL))
+    print('Completed with http status {}'.format(http_code))
+
+
+if __name__ == "__main__":
+    courses = ['MITx+14.310x+1T2018']
+    for course_id in courses:
+        outfile = 'in/index/{}.html'.format(course_id)
+        url = 'https://courses.edx.org/courses/course-v1:{}/course/'.format(course_id)
+        maybe_download(url, outfile)
+        section_files = download_course_sections(outfile)
+        parse_coures_sections(course_id, section_files)
+
