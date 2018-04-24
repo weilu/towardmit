@@ -10,3 +10,5 @@ pip install -r requirements.txt
 cp scrape_sample.sh scrape.sh
 python scrape.sh
 ```
+
+The generated quiz html files can be found in your `out` directory

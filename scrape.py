@@ -9,7 +9,6 @@ from bs4 import BeautifulSoup
 from subprocess import check_output, CalledProcessError
 
 DEVNULL = open(os.devnull, 'wb', 0)
-HTTP_HEADS = open('in/headers').read()
 
 
 def soup(f):
@@ -85,6 +84,10 @@ def maybe_download(url, outfile):
 
 
 if __name__ == "__main__":
+    # make data directories if they don't already exist
+    for folder in ['in/index', 'out']:
+        os.makedirs(folder, exist_ok=True)
+
     courses = ['MITx+JPAL102x+1T2018', 'MITx+14.740x+1T2018',
                'MITx+14.310x+1T2018', 'MITx+14.73x+1T2018',
                'MITx+14.100x+1T2018']
