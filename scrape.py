@@ -84,7 +84,9 @@ def maybe_download(url, outfile):
 
 
 if __name__ == "__main__":
-    courses = ['MITx+14.310x+1T2018']
+    courses = ['MITx+JPAL102x+1T2018', 'MITx+14.740x+1T2018',
+               'MITx+14.310x+1T2018', 'MITx+14.73x+1T2018',
+               'MITx+14.100x+1T2018']
     for course_id in courses:
         outfile = 'in/index/{}.html'.format(course_id)
         url = 'https://courses.edx.org/courses/course-v1:{}/course/'.format(course_id)
