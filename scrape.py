@@ -3,6 +3,7 @@ import shlex
 import os
 import time
 import sys
+from random import randint
 from glob import glob
 from bs4 import BeautifulSoup
 from subprocess import check_output, CalledProcessError
