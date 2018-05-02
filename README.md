@@ -8,7 +8,7 @@ This project requires python 3.
 pip install -r requirements.txt
 # grab request headers off chrome dev console & fill out scrape.sh
 cp scrape_sample.sh scrape.sh
-python scrape.sh
+python scrape.py
 ```
 
 The generated quiz html files can be found in your `out` directory
