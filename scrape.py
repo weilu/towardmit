@@ -9,6 +9,11 @@ from bs4 import BeautifulSoup
 from subprocess import check_output, CalledProcessError
 
 DEVNULL = open(os.devnull, 'wb', 0)
+HEAD = '\n'.join(["<head>",
+                  "<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>",
+                  "</head>",
+                  "<body>\n"])
+TAIL = "</body>"
 
 
 def soup(f):
@@ -49,6 +54,7 @@ def download_course_sections(course_index_filename):
 
 def parse_coures_sections(course_id, section_files):
     with open('out/{}_quiz.html'.format(course_id), 'w') as out:
+        out.write(HEAD)
         for filename in section_files:
             divs = soup(open(filename, 'r')).findAll('div', {'class': 'seq_contents'})
             for div in divs:
@@ -62,6 +68,7 @@ def parse_coures_sections(course_id, section_files):
                         problem_node = problem.find('div', {'class': 'problem'})
                         remove_answer(problem_node)
                         out.write(problem_node.prettify())
+        out.write(TAIL)
 
 
 def maybe_download(url, outfile):
