@@ -52,7 +52,7 @@ def download_course_sections(course_index_filename):
     return downloaded
 
 
-def parse_coures_sections(course_id, section_files):
+def parse_courses_sections(course_id, section_files):
     with open('out/{}_quiz.html'.format(course_id), 'w') as out:
         out.write(HEAD)
         for filename in section_files:
@@ -98,10 +98,11 @@ if __name__ == "__main__":
     courses = ['MITx+JPAL102x+1T2018', 'MITx+14.740x+1T2018',
                'MITx+14.310x+1T2018', 'MITx+14.73x+1T2018',
                'MITx+14.100x+1T2018']
+
     for course_id in courses:
         outfile = 'in/index/{}.html'.format(course_id)
         url = 'https://courses.edx.org/courses/course-v1:{}/course/'.format(course_id)
         maybe_download(url, outfile)
         section_files = download_course_sections(outfile)
-        parse_coures_sections(course_id, section_files)
+        parse_courses_sections(course_id, section_files)
 
