@@ -18,7 +18,8 @@ The generated quiz html files can be found in your `out` directory
 In the scrape.sh file, the [your request headers] needs to be replaced by your headers!
 This will be a series of '-H' options, which includes your edX login details.
 
-These headers can be found by doing the following
+These headers can be found by doing the following.
+
 (instructions are with the Chromium web-browser, and tested using Linux)
 
 1. Open your edX dashboard, logging in as necessary
