@@ -95,10 +95,8 @@ if __name__ == "__main__":
     for folder in ['in/index', 'out']:
         os.makedirs(folder, exist_ok=True)
 
-#    courses = ['MITx+JPAL102x+1T2018', 'MITx+14.740x+1T2018',
-#               'MITx+14.310x+1T2018', 'MITx+14.73x+1T2018',
-#               'MITx+14.100x+1T2018']
-    courses = ['MITx+14.310x+1T2018', 'MITx+14.73x+1T2018',
+    courses = ['MITx+JPAL102x+1T2018', 'MITx+14.740x+1T2018',
+               'MITx+14.310x+1T2018', 'MITx+14.73x+1T2018',
                'MITx+14.100x+1T2018']
 
     for course_id in courses:
