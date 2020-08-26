@@ -75,9 +75,13 @@ def parse_courses_sections(course_id, section_files):
                             for image in images:
                                 if not image.has_attr('class'):
                                     image_url = image['src']
-                                    img = Image.open(requests.get('https://courses.edx.org' + image_url, stream = True).raw)
-                                    image['src'] = './images/{}'.format(urlparse(image_url).path.rsplit("/", 1)[-1])
-                                    img.save('out/images/{}'.format(urlparse(image_url).path.rsplit("/", 1)[-1]))
+                                    try:
+                                        img = Image.open(requests.get('https://courses.edx.org' + image_url, stream = True).raw)
+                                        image['src'] = './images/{}'.format(urlparse(image_url).path.rsplit("/", 1)[-1])
+                                        img.save('out/images/{}'.format(urlparse(image_url).path.rsplit("/", 1)[-1]))
+                                    except requests.exceptions.RequestException as e:
+                                        print('Image with url: {} not found'.format(image_url))
+                                        print(e)
                         remove_answer(problem_node)
                         out.write(problem_node.prettify())
         out.write(TAIL)
@@ -111,10 +115,10 @@ if __name__ == "__main__":
     # which is denoted by the letters following the (+) 1T2020 -> term (1T for spring, 2T for summer and 3T for fall) and the year you enrolled
     courses = [
         #'MITx+JPAL102x+2T2020',
-        #'MITx+14.740x+2T2020',
+        'MITx+14.740x+2T2020',
         #'MITx+14.310x+2T2020',
         #'MITx+14.73x+2T2020',
-        'MITx+14.100x+2T2020'
+        #'MITx+14.100x+2T2020'
     ]
 
     for course_id in courses:
