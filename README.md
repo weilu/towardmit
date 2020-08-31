@@ -32,6 +32,7 @@ cp scrape_sample.sh scrape.sh
 
 In the scrape.sh file, the [your request headers] needs to be replaced by request headers obtained from your browser.
 The request headers will be a series of '-H' options, which includes your edX login details.
+The header you need to scrape the courses are the cookies, which can be detected because they start with the work Cookie (e.g. -H 'Cookie: __cf...').
 
 These headers can be found by doing the following.
 
@@ -39,11 +40,19 @@ These headers can be found by doing the following.
 
 1. Open your edX dashboard, logging in as necessary
 2. Open 'Developer Tools', which is a sub-menu item from 'More tools' in the menu
-3. Choose the 'Network' tab in the Developer pane
-4. Reload the dashboard web-page
-5. Using the first entry in the 'Network' tab, named 'dashboard', open up the context (right-click) menu and choose 'Copy as cURL'
-6. Using a text editor, copy all the '-H' options (which will follow the "curl 'https://courses.edx.org/dashboard'"), but DO NOT copy any option which will compress the output (e.g. "-H 'Accept-Encoding: gzip, deflate, br'" and "--compressed". There will be many lines of '-H' options!
-7. Copy the required '-H' options into your scrape.sh file, replacing '[your request headers]'
+3. Choose the 'Console' tab in the Developer pane
+4. Enter the following command 'alert( document.cookie );' (only the text inside the single quotes)
+5. Copy the text in the alert window
+6. Paste the required header into your scrape.sh file inside the single quotes
+
+### Editing the scrape.py file
+
+You may need to edit the scrape.py file to adjust for the version of the course you are enrolled to. This can be achieved by doing the following.
+
+1. Open the scrape.py file in a text editor.
+2. Find the courses variable inside the "\__main__" function.
+3. Adjust to the the courses you want to scrape. You have to be registered for that run of the course, which is denoted by the letters following the (+) 1T2020 -> term (1T for spring, 2T for summer and 3T for fall) and the year you enrolled. You can also check this information in the URL of any of your courses.
+
 
 ### Executing the script
 

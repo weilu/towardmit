@@ -7,6 +7,9 @@ from random import randint
 from glob import glob
 from bs4 import BeautifulSoup
 from subprocess import check_output, CalledProcessError
+from PIL import Image
+import requests
+from urllib.parse import urlparse
 
 DEVNULL = open(os.devnull, 'wb', 0)
 HEAD = '\n'.join(["<head>",
@@ -42,10 +45,11 @@ def download_course_sections(course_index_filename):
     os.makedirs(indir, exist_ok=True)
 
     # only need one jump_to link from each li.subsection.accordion
+    # added graded to scrape only the sections that have graded exercises
     index = soup(open(course_index_filename))
     downloaded = []
-    for li in index.select('li.subsection.accordion'):
-        section_link = li.find('a', {'class': 'outline-item'})['href']
+    for li in index.select('li.subsection.accordion.graded'):
+        section_link = li.find('a', {'class': 'subsection-text'})['href']
         filename = indir + '/' + section_link.split('@')[-1]
         maybe_download(section_link, filename)
         downloaded.append(filename)
@@ -66,6 +70,18 @@ def parse_courses_sections(course_id, section_files):
                     for prob in problems:
                         problem = soup(prob['data-content'])
                         problem_node = problem.find('div', {'class': 'problem'})
+                        if problem.find('img') != None:
+                            images = problem.findAll('img')
+                            for image in images:
+                                if not image.has_attr('class'):
+                                    image_url = image['src']
+                                    try:
+                                        img = Image.open(requests.get('https://courses.edx.org' + image_url, stream = True).raw)
+                                        image['src'] = './images/{}'.format(urlparse(image_url).path.rsplit("/", 1)[-1])
+                                        img.save('out/images/{}'.format(urlparse(image_url).path.rsplit("/", 1)[-1]))
+                                    except requests.exceptions.RequestException as e:
+                                        print('Image with url: {} not found'.format(image_url))
+                                        print(e)
                         remove_answer(problem_node)
                         out.write(problem_node.prettify())
         out.write(TAIL)
@@ -92,12 +108,18 @@ def maybe_download(url, outfile):
 
 if __name__ == "__main__":
     # make data directories if they don't already exist
-    for folder in ['in/index', 'out']:
+    for folder in ['in/index', 'out/images']:
         os.makedirs(folder, exist_ok=True)
 
-    courses = ['MITx+JPAL102x+1T2018', 'MITx+14.740x+1T2018',
-               'MITx+14.310x+1T2018', 'MITx+14.73x+1T2018',
-               'MITx+14.100x+1T2018']
+    # select the courses you want to scrape. You have to be registered for that run of the course
+    # which is denoted by the letters following the (+) 1T2020 -> term (1T for spring, 2T for summer and 3T for fall) and the year you enrolled
+    courses = [
+        #'MITx+JPAL102x+2T2020',
+        'MITx+14.740x+2T2020',
+        #'MITx+14.310x+2T2020',
+        #'MITx+14.73x+2T2020',
+        #'MITx+14.100x+2T2020'
+    ]
 
     for course_id in courses:
         outfile = 'in/index/{}.html'.format(course_id)
